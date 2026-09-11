@@ -1,0 +1,3 @@
+# One sample identifier per line
+SAMPLE_001
+SAMPLE_002

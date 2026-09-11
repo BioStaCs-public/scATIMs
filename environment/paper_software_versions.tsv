@@ -1,0 +1,13 @@
+component	version	executed_path_or_source	role	verification
+Python	3.11.5	paper runtime environment	scMic and ATIMs runtime	direct --version on 2026-09-11
+numpy	1.26.4	paper runtime environment	array computation	direct Python import on 2026-09-11
+pandas	2.2.3	paper runtime environment	tabular processing	direct Python import on 2026-09-11
+scipy	1.14.1	paper runtime environment	Fisher exact, Mann-Whitney U and chi-square functions	direct Python import on 2026-09-11
+statsmodels	0.14.3	paper runtime environment	Benjamini-Hochberg multiple-testing correction	direct Python import on 2026-09-11
+pysam	0.24.0	paper runtime environment	BAM processing in scMic	direct Python import on 2026-09-11
+BWA	0.7.17-r1188	paper upstream environment	upstream host/vector alignment	direct executable query on 2026-09-11
+samtools	1.5; htslib 1.5	paper upstream environment	upstream BAM/FASTQ processing	direct executable query on 2026-09-11
+STAR/STARsolo	2.7.10a	paper upstream environment	upstream host expression alignment	direct executable query on 2026-09-11
+Java	OpenJDK 17.0.11-internal	paper PathSeq environment	GATK PathSeq runtime	direct executable query on 2026-09-11
+GATK PathSeq	4.6.0.0	paper PathSeq installation	upstream microbial alignment/classification	direct JAR --version on 2026-09-11
+conda	23.9.0	paper environment manager	environment manager	direct --version on 2026-09-11

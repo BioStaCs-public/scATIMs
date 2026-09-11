@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scATIMs"
+version = "0.1.0rc1"
+description = "Single-cell microbial signal assignment and statistical decontamination"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = {text = "All rights reserved; private prerelease"}
+dependencies = [
+  "numpy>=1.26,<2",
+  "pandas>=2.2,<3",
+  "scipy>=1.14,<2",
+  "statsmodels>=0.14,<1",
+  "pysam>=0.24,<1",
+  "PyYAML>=6.0,<7",
+]
+
+[project.scripts]
+scatims = "scatims.cli:main"
+scatims-scmic = "scatims.scmic:main"
+scatims-atims = "scatims.atims:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

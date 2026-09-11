@@ -1,0 +1,27 @@
+project:
+  root_dir: /path/to/project_root
+  sample_list: /path/to/sample_list.txt
+
+scmic:
+  taxonomy_hierarchy: /path/to/V7_taxid_hierarchy.txt
+  output_subdir: 06.scMic_6_V10_EM_Dis
+  workers: 32
+  pathseq_bam_relative: 05.pathseq_v10/{sample_id}_rna_output.pathseq.bam
+  barcode_whitelist_relative: 01.starSolo/Solo.out/Gene/filtered_gz/barcodes.tsv.gz
+  barcode_mapping_relative: 01.starSolo_bam/CR_CB_mapping.tsv
+  error_log_name: scMic_multilevel_error.log
+
+atims:
+  tax_levels: all
+  scmic_dir_name: 06.scMic_6_V10_EM_Dis
+  output_dir_name: 07.ATIMs_9_V10_EM_Dis
+  workers: 32
+  barcode_whitelist_relative: 01.starSolo/Solo.out/Gene/filtered_gz/barcodes.tsv.gz
+  barcode_mapping_relative: 01.starSolo_bam/CR_CB_mapping.tsv
+  error_log_name: ATIMs_v10_error.log
+  fisher_pval: 0.05
+  mw_pval: 0.05
+  dispersion_pval: 0.05
+  enrichment_ratio: 1.0
+  log2fc: 1.0
+  min_evidence_score: 0.0

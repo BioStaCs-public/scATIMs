@@ -1,0 +1,13 @@
+name: scatims
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11.5
+  - numpy=1.26.4
+  - pandas=2.2.3
+  - scipy=1.14.1
+  - statsmodels=0.14.3
+  - pysam=0.24.0
+  - pyyaml=6.0.2
+  - pip
