@@ -8,6 +8,7 @@
 - Added deterministic audited CR-to-CB mapping with conflict gating.
 - Added stage ranges, dry-run, force-rerun controls and a complete configuration template.
 - Retained scMic and ATIMs as the original stage-06/07 method core.
+- Recorded exact checksums and observed composition of the paper V7 resource snapshot.
 
 ## 0.1.0rc1 — 2026-09-11
 
