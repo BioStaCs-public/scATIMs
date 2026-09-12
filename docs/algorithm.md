@@ -1,6 +1,19 @@
-# Algorithm overview
+# Algorithm and workflow overview
 
-## Step 1: scMic
+## Workflow boundary
+
+The scATIMs software workflow spans stages 00–07: FASTQ QC (00), STARsolo
+expression/barcode processing (01), barcode/UMI identity embedding (02),
+GRCh38 filtering (03), T2T-CHM13 filtering (04), optional UniVec filtering
+(04b), PathSeq microbial classification (05), scMic assignment (06), and
+ATIMs decontamination (07).
+
+Stages 00–05 are reproducible workflow components built around established
+third-party tools. Stages 06–07 constitute the scATIMs core method. Calling the
+complete workflow scATIMs does not imply authorship of fastp, STARsolo, BWA,
+samtools, GATK PathSeq or their underlying algorithms.
+
+## Stage 06: scMic
 
 scMic reads microbial alignments carrying the PathSeq `YP` taxonomy tag and
 uses the STARsolo-derived CR-to-CB mapping to correct raw read barcodes. Reads
@@ -18,7 +31,7 @@ streams. The historical internal function name `calculate_global_anchors` is
 retained in release candidate 0.1.0rc1 for provenance, but “global anchoring” is
 not the public method description.
 
-## Step 2: ATIMs
+## Stage 07: ATIMs
 
 ATIMs aggregates scMic scores by barcode and taxon. For each taxon and rank it
 computes:

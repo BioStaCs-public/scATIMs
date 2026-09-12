@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import __version__, atims, scmic
+from . import __version__, atims, cr_cb, scmic
 
 
 def _value(mapping: dict, key: str, section: str):
@@ -79,11 +79,12 @@ def run_from_config(config_path: str | Path) -> None:
 
 def _print_help() -> None:
     print(
-        "scATIMs: scMic microbial-signal assignment followed by ATIMs decontamination\n\n"
+        "scATIMs: end-to-end single-cell microbial-signal workflow (stages 00-07)\n\n"
         "Usage:\n"
         "  scatims run --config CONFIG.yaml\n"
         "  scatims scmic [scMic options]\n"
         "  scatims atims [ATIMs options]\n"
+        "  scatims cr-cb [CR-to-CB mapping options]\n"
         "  scatims --version"
     )
 
@@ -100,6 +101,8 @@ def main(argv=None):
         return scmic.main(args[1:])
     if args[0] == "atims":
         return atims.main(args[1:])
+    if args[0] == "cr-cb":
+        return cr_cb.main(args[1:])
     if args[0] == "run":
         parser = argparse.ArgumentParser(prog="scatims run")
         parser.add_argument("--config", required=True)

@@ -10,7 +10,7 @@ from unittest import mock
 import pandas as pd
 import pysam
 
-from scatims import atims, cli, scmic
+from scatims import atims, cli, cr_cb, scmic
 
 
 class ScMicCoreTests(unittest.TestCase):
@@ -166,6 +166,31 @@ class UnifiedCliTests(unittest.TestCase):
         atims_args = atims_main.call_args.args[0]
         index = atims_args.index("--min_evidence_score")
         self.assertEqual(atims_args[index + 1], "0.0")
+
+
+class CrCbMappingTests(unittest.TestCase):
+    def test_deterministic_mapping(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bam_path = root / "tagged.bam"
+            header = {"HD": {"VN": "1.6"}, "SQ": [{"SN": "chr1", "LN": 100}]}
+            with pysam.AlignmentFile(bam_path, "wb", header=header) as bam:
+                for index, (cr, cb) in enumerate((("RAW2", "CB2"), ("RAW1", "CB1"))):
+                    read = pysam.AlignedSegment()
+                    read.query_name = f"r{index}"
+                    read.query_sequence = "A" * 20
+                    read.flag = 4
+                    read.query_qualities = pysam.qualitystring_to_array("I" * 20)
+                    read.set_tag("CR", cr)
+                    read.set_tag("CB", cb)
+                    bam.write(read)
+            output = root / "CR_CB_mapping.tsv"
+            metrics = cr_cb.extract_mapping(bam_path, output)
+            self.assertEqual(metrics["mapping_rows"], 2)
+            self.assertEqual(output.read_text().splitlines(), [
+                "CR_Raw\tCB_Corrected", "RAW1\tCB1", "RAW2\tCB2"
+            ])
+            self.assertIn("status\tsuccess", (root / "CR_CB_mapping_audit.tsv").read_text())
 
 
 if __name__ == "__main__":

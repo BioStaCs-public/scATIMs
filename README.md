@@ -3,18 +3,26 @@
 > Private release candidate. Do not redistribute or make this repository public
 > until authorship, licensing and reference-database release decisions are approved.
 
-scATIMs is a two-step workflow for assigning microbial signals in single-cell
-RNA-sequencing data and identifying cell- or empty-droplet-enriched taxa:
+scATIMs is an end-to-end workflow from raw single-cell RNA-sequencing FASTQ
+files to statistically decontaminated microbial signals. It comprises stages
+00–07:
 
-1. **scMic** corrects cell barcodes, collapses UMIs directionally and performs
-   anchor-weighted allocation of ambiguous microbial alignments separately in
-   cell and empty-droplet data streams.
-2. **ATIMs** compares cell and empty droplets with Fisher exact,
-   Mann–Whitney U and cell-side dispersion tests, applies Benjamini–Hochberg
-   correction and reports cell- and empty-enriched taxa.
+| Stage | Role |
+|---|---|
+| 00 | FASTQ quality control |
+| 01 | STARsolo host-expression quantification and CR-to-CB identity recovery |
+| 02 | Barcode/UMI identity embedding in candidate reads |
+| 03 | GRCh38 host filtering |
+| 04 | T2T-CHM13 host filtering |
+| 04b | Optional UniVec/vector filtering |
+| 05 | GATK PathSeq microbial classification |
+| 06 | scMic barcode correction, directional UMI collapse and anchor-weighted assignment |
+| 07 | ATIMs cell-versus-empty-droplet statistical decontamination |
 
-The package consumes PathSeq-tagged BAM files plus STARsolo barcode artifacts.
-PathSeq and host-removal are prerequisites, not additional scATIMs algorithm steps.
+Stages 00–05 orchestrate established third-party tools and preserve microbial
+candidate-read identity. The original computational method is concentrated in
+stage 06 (scMic) and stage 07 (ATIMs); this distinction must be retained in
+method descriptions and software attribution.
 
 ## Release status
 
@@ -23,7 +31,9 @@ PathSeq and host-removal are prerequisites, not additional scATIMs algorithm ste
 - Server-specific paths have been replaced with CLI/configuration parameters.
 - The paper parameter configuration is in `configs/paper_parameters.yaml`.
 - No real sample data, reference database, GATK binary or patient information is included.
-- Git has not yet been initialized for this candidate.
+- The current private repository contains the validated 06–07 core and the
+  parameterized stage-05 PathSeq wrapper. Integration of stages 00–04b into
+  the unified runner is in progress and must not yet be described as complete.
 
 ## Installation
 
@@ -40,7 +50,7 @@ For exact internal provenance, the task archive retains the original
 `scMic_v2` explicit conda specification. The curated environment here contains
 only dependencies needed to run the release candidate.
 
-## Run both steps
+## Run the validated 06–07 core
 
 Copy the paper configuration and replace its three placeholder paths:
 
@@ -97,3 +107,4 @@ EmptyEnriched and Parameters outputs.
 - `docs/input_output.md`: file contracts and outputs.
 - `docs/parameters.md`: paper-locked and resource parameters.
 - `docs/release_provenance.md`: mapping from frozen runtime scripts to this candidate.
+- `docs/workflow_00_07.md`: complete stage boundary, contracts and implementation status.

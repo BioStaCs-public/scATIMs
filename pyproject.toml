@@ -22,6 +22,7 @@ dependencies = [
 scatims = "scatims.cli:main"
 scatims-scmic = "scatims.scmic:main"
 scatims-atims = "scatims.atims:main"
+scatims-cr-cb = "scatims.cr_cb:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
