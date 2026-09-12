@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ==============================================================================
-# Optional PathSeq prerequisite workflow for scATIMs
+# Standalone stage-05 PathSeq workflow for scATIMs
 # ==============================================================================
 
 # -----------------------------

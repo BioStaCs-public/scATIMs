@@ -6,6 +6,32 @@
 a UTF-8 text file with one sample identifier per non-comment line. Blank lines
 and lines beginning with `#` are ignored.
 
+For a complete run, `project.input_dir` contains one directory per sample with
+paired FASTQ files. The default templates are
+`<sample>/<sample>.R1.fq.gz` and `<sample>/<sample>.R2.fq.gz`; both templates
+are configurable. Sample identifiers are restricted to letters, digits,
+period, underscore and hyphen, and duplicates are rejected.
+
+## Stages 00–05 outputs
+
+- `00.QC/<sample>/`: QC FASTQ pair and fastp JSON/HTML reports.
+- `01.starSolo/`: expression matrices plus gzip copies under
+  `Solo.out/Gene/{raw,filtered}_gz`.
+- `01.starSolo_bam/`: CR/CB-tagged STARsolo BAM,
+  `CR_CB_mapping.tsv`, `CR_CB_mapping_audit.tsv` and conflict table.
+- `02.umiTools/`: barcode/UMI-embedded candidate-read FASTQ, unique raw
+  barcode table and per-barcode read counts. The directory name is retained
+  for paper provenance; the release implementation performs streaming
+  identity embedding internally and does not call the `umi_tools` executable.
+- `03.hg38/`: GRCh38 aligned, unmapped and flagstat artifacts.
+- `04.t2t/`: T2T-CHM13 aligned, unmapped and flagstat artifacts.
+- `04b.vector/`: optional UniVec aligned and vector-unmapped artifacts.
+- `05.pathseq_v10/`: PathSeq BAM, score table and score/filter metrics.
+
+Stage completion requires the documented terminal outputs to exist and be
+non-empty. `--force` reruns selected stages; otherwise completed stages resume
+without overwriting their results.
+
 ## scMic inputs
 
 ### PathSeq BAM

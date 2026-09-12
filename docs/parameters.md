@@ -14,7 +14,7 @@
 
 Use `configs/paper_parameters.yaml` for paper reproduction. In the frozen
 historical ATIMs source, the standalone Python default for minimum evidence was
-1.0, but the actual paper batch runner overrode it to 0.0. Candidate 0.1.0rc1
+1.0, but the actual paper batch runner overrode it to 0.0. The release candidate
 sets the standalone default to 0.0 to match the paper configuration.
 
 ## Resource parameters
@@ -31,5 +31,5 @@ can be overridden by CLI options.
 - `--filter-duplicates false`
 - `--min-score-identity 0.7`
 
-PathSeq is an upstream prerequisite. These values are retained in the optional
-workflow but are not parameters of the scMic or ATIMs statistical algorithms.
+PathSeq is stage 05 of the complete scATIMs workflow. These values are workflow
+parameters, not parameters of the scMic or ATIMs statistical algorithms.

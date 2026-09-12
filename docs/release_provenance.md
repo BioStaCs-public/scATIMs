@@ -14,7 +14,7 @@
 - Unified the public project name as scATIMs with scMic and ATIMs subcommands.
 - Converted fixed sample-relative input locations to configurable templates.
 - Removed server absolute paths and local sample-list defaults.
-- Added a YAML-driven two-step runner and paper parameter file.
+- Added a YAML-driven stage-06/07 core runner and paper parameter file.
 - Changed the candidate standalone ATIMs minimum-evidence default from the
   historical 1.0 to the actual paper value 0.0.
 - Required Parameters JSON to exist before ATIMs treats a rank as complete.
@@ -26,3 +26,18 @@ The Fisher, Mann–Whitney, fold-change, enrichment-ratio, dispersion,
 Benjamini–Hochberg and anchor-weighted assignment calculations were not
 intentionally changed. Equivalence beyond the included synthetic tests still
 requires comparison against frozen real-run outputs before public release.
+
+## 0.2.0rc1 workflow-boundary extension
+
+The repository boundary was expanded to the complete stage 00–07 human
+workflow. Parameterized implementations were added for fastp QC, STARsolo
+expression and CR/CB-tag generation, audited CR-to-CB extraction, barcode/UMI
+identity embedding, sequential GRCh38 and T2T-CHM13 filtering, optional UniVec
+filtering and GATK PathSeq. These are orchestration stages around cited
+third-party tools; the original method core remains scMic and ATIMs.
+
+The historical 00–05 sources contain fixed infrastructure paths and are not
+copied into the repository. Their exact identities and the refactoring boundary
+are retained in the internal source-audit record. Stage 00–05 command rendering
+and synthetic identity operations are tested, but a full real FASTQ equivalence
+run remains pending.

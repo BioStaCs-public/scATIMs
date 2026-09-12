@@ -26,14 +26,15 @@ method descriptions and software attribution.
 
 ## Release status
 
-- Candidate version: `0.1.0rc1`
+- Candidate version: `0.2.0rc1`
 - Paper runtime source is frozen separately and is not edited by this repository.
 - Server-specific paths have been replaced with CLI/configuration parameters.
 - The paper parameter configuration is in `configs/paper_parameters.yaml`.
 - No real sample data, reference database, GATK binary or patient information is included.
-- The current private repository contains the validated 06–07 core and the
-  parameterized stage-05 PathSeq wrapper. Integration of stages 00–04b into
-  the unified runner is in progress and must not yet be described as complete.
+- The current private repository contains the validated 06–07 core and a
+  parameterized 00–05 implementation. Stages 00–05 have command-level and
+  synthetic tests, but still require a controlled real-FASTQ equivalence run
+  before they are described as production-validated.
 
 ## Installation
 
@@ -69,7 +70,27 @@ scatims scmic --help
 scatims atims --help
 ```
 
-## Required input layout
+## Run the complete 00–07 workflow
+
+Copy and edit the full template, then inspect commands before execution:
+
+```bash
+cp configs/full_workflow.example.yaml config.local.yaml
+scatims workflow --config config.local.yaml --dry-run
+scatims workflow --config config.local.yaml
+```
+
+Stage ranges and explicit reruns are supported:
+
+```bash
+scatims workflow --config config.local.yaml --from-stage 03 --to-stage 05
+scatims workflow --config config.local.yaml --from-stage 04b --to-stage 04b --force
+```
+
+The current release scope is human scRNA-seq. Mouse preprocessing is not
+advertised as validated.
+
+## Required input layout for a 06–07-only run
 
 By default, each sample under `project.root_dir` is expected to contain:
 

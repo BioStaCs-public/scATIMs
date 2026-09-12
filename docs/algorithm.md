@@ -28,7 +28,7 @@ no candidate has anchor support, the signal is assigned to `unknown`.
 
 Anchor construction is performed independently for the cell and empty-droplet
 streams. The historical internal function name `calculate_global_anchors` is
-retained in release candidate 0.1.0rc1 for provenance, but “global anchoring” is
+retained for provenance, but “global anchoring” is
 not the public method description.
 
 ## Stage 07: ATIMs

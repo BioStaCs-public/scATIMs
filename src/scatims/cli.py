@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import __version__, atims, cr_cb, scmic
+from . import __version__, atims, cr_cb, scmic, workflow
 
 
 def _value(mapping: dict, key: str, section: str):
@@ -85,6 +85,7 @@ def _print_help() -> None:
         "  scatims scmic [scMic options]\n"
         "  scatims atims [ATIMs options]\n"
         "  scatims cr-cb [CR-to-CB mapping options]\n"
+        "  scatims workflow --config CONFIG.yaml [--from-stage 00 --to-stage 07]\n"
         "  scatims --version"
     )
 
@@ -103,6 +104,8 @@ def main(argv=None):
         return atims.main(args[1:])
     if args[0] == "cr-cb":
         return cr_cb.main(args[1:])
+    if args[0] == "workflow":
+        return workflow.main(args[1:])
     if args[0] == "run":
         parser = argparse.ArgumentParser(prog="scatims run")
         parser.add_argument("--config", required=True)

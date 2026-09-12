@@ -1,0 +1,84 @@
+project:
+  input_dir: /path/to/raw_fastq_root
+  root_dir: /path/to/scatims_output_root
+  sample_list: /path/to/sample_list.txt
+
+library:
+  species: human
+  three_or_five_prime: "3"
+  tenx_version: v3
+
+inputs:
+  r1: "{sample_id}.R1.fq.gz"
+  r2: "{sample_id}.R2.fq.gz"
+
+tools:
+  fastp: fastp
+  star: STAR
+  bwa: bwa
+  samtools: samtools
+  java: java
+
+resources:
+  human_star_index: /path/to/STAR_GRCh38_index
+  whitelist_2014: /path/to/737K-april-2014_rc.txt
+  whitelist_2016: /path/to/737K-august-2016.txt
+  whitelist_2018: /path/to/3M-february-2018.txt
+  whitelist_5p_2023: /path/to/3M-5pgex-jan-2023.txt
+  host_fasta_grch38: /path/to/GRCh38.fa
+  host_fasta_t2t: /path/to/T2T-CHM13.fa
+  vector_fasta: /path/to/UniVec.fa
+  gatk_jar: /path/to/gatk-package-4.6.0.0-local.jar
+  pathseq_host_db: /path/to/pathseq_host_database
+  pathseq_microbe_db: /path/to/pathseq_custom_V7_database
+
+compute:
+  threads: 32
+  bam_threads: 2
+  star_bam_sort_ram: 60000000000
+  samtools_mem_per_thread: 1G
+  vector_threads: 32
+  pathseq_sample_workers: 4
+  pathseq_spark_master: local[10]
+  pathseq_driver_memory: 80g
+  pathseq_executor_memory: 20g
+  pathseq_executor_cores: 5
+  pathseq_java_xmx: 64g
+  pathseq_java_xms: 32g
+
+workflow:
+  vector_filter: true
+
+pathseq:
+  output_dir_name: 05.pathseq_v10
+  min_clipped_read_length: 60
+  min_score_identity: 0.7
+  host_kmer: GCA_000001405.15_GRCh38_no_alt_analysis_set.hss
+  host_image: GCA_000001405.15_GRCh38_no_alt_analysis_set.fa.img
+  microbe_image: pathseq_custom_V7_fixed.fa.img
+  microbe_dict: pathseq_custom_V7_fixed.dict
+  taxonomy_file: pathseq_custom_V7_fixed.db
+
+scmic:
+  taxonomy_hierarchy: /path/to/V7_taxid_hierarchy.txt
+  output_subdir: 06.scMic_6_V10_EM_Dis
+  workers: 32
+  pathseq_bam_relative: 05.pathseq_v10/{sample_id}_rna_output.pathseq.bam
+  barcode_whitelist_relative: 01.starSolo/Solo.out/Gene/filtered_gz/barcodes.tsv.gz
+  barcode_mapping_relative: 01.starSolo_bam/CR_CB_mapping.tsv
+  error_log_name: scMic_multilevel_error.log
+
+atims:
+  tax_levels: all
+  scmic_dir_name: 06.scMic_6_V10_EM_Dis
+  output_dir_name: 07.ATIMs_9_V10_EM_Dis
+  workers: 32
+  barcode_whitelist_relative: 01.starSolo/Solo.out/Gene/filtered_gz/barcodes.tsv.gz
+  barcode_mapping_relative: 01.starSolo_bam/CR_CB_mapping.tsv
+  error_log_name: ATIMs_v10_error.log
+  fisher_pval: 0.05
+  mw_pval: 0.05
+  dispersion_pval: 0.05
+  enrichment_ratio: 1.0
+  log2fc: 1.0
+  min_evidence_score: 0.0

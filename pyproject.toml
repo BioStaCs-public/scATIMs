@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scATIMs"
-version = "0.1.0rc1"
-description = "Single-cell microbial signal assignment and statistical decontamination"
+version = "0.2.0rc1"
+description = "End-to-end single-cell microbial signal identification and decontamination workflow"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 license = {text = "All rights reserved; private prerelease"}
@@ -23,6 +23,7 @@ scatims = "scatims.cli:main"
 scatims-scmic = "scatims.scmic:main"
 scatims-atims = "scatims.atims:main"
 scatims-cr-cb = "scatims.cr_cb:main"
+scatims-workflow = "scatims.workflow:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
