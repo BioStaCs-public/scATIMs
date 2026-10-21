@@ -42,8 +42,10 @@ third-party tools; the original method core remains scMic and ATIMs.
 The historical 00–05 sources contain fixed infrastructure paths and are not
 copied into the repository. Their exact identities and the refactoring boundary
 are retained in the internal source-audit record. Stage 00–05 command rendering
-and synthetic identity operations are tested, but a full real FASTQ equivalence
-run remains pending.
+and synthetic identity operations are tested. A controlled 00–07 real-FASTQ
+equivalence comparison against the archived legacy workflow was completed for
+commit `c446950`; see `release_validation.md`. Its one-library scope does not
+establish validation across all chemistries, platforms or reference versions.
 
 ## 0.2.0rc2 compatibility corrections
 

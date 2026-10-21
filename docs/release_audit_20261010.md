@@ -1,6 +1,7 @@
-# Release hygiene audit — 2026-10-21
+# Release hygiene audit — initial 2026-10-21, updated after controlled equivalence validation
 
-Scope: private release candidate `0.2.0rc2`, before any commit or remote push.
+Scope: private `0.2.0rc2` candidate audit, subsequently updated after private
+commits, push to `main`, and controlled real-FASTQ equivalence validation.
 
 ## Sensitive-information check
 
