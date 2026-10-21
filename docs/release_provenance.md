@@ -26,7 +26,9 @@
 The Fisher, Mann–Whitney, fold-change, enrichment-ratio, dispersion,
 Benjamini–Hochberg and anchor-weighted assignment calculations were not
 intentionally changed. Equivalence beyond the included synthetic tests still
-requires comparison against frozen real-run outputs before public release.
+requires comparison against frozen real-run outputs before public release. A
+controlled real-FASTQ comparison was completed for commit `c446950`; see
+`release_validation.md` for its scope and result.
 
 ## 0.2.0rc1 workflow-boundary extension
 
@@ -50,5 +52,6 @@ table when one raw barcode had more than one corrected-barcode value: normal
 execution stopped, and the non-strict path selected one value. `0.2.0rc2`
 instead writes every unique valid pair in lexicographic order, matching the
 historical `sort -u` table, and writes conflicts to an audit file. This behavior
-is covered by a synthetic regression test. A real-FASTQ output-equivalence
-comparison remains required before public release.
+is covered by a synthetic regression test. A controlled real-FASTQ
+output-equivalence comparison was completed for commit `c446950`; see
+`release_validation.md`.

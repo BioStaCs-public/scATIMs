@@ -53,11 +53,20 @@ the current server-side trial copy differs from this candidate. It must not be
 described as an end-to-end validation of the public release without rerunning
 or comparing outputs with an identified release commit.
 
+## Controlled real-FASTQ equivalence — passed
+
+Commit `c446950598d9b6a61f4d5388c52f951ff7db7d31` was subsequently evaluated
+against an archived legacy output using one representative real 10x 3' v2
+library. The candidate was run from stages 00 through 07 in a new output
+location. Fastp counts, STARsolo barcode content, CR-to-CB mapping, host/vector
+filter read-name sets, PathSeq assignments, all stage-06 tables and all
+stage-07 statistical tables were identical. The only intentional difference
+was omission of the retired `min_evidence_score` JSON key. See
+`docs/release_validation.md` for scope and interpretation.
+
 ## Follow-up before publication
 
-Run one controlled, real-FASTQ equivalence test against the frozen paper
-runtime before describing any stage as production-validated. Do not add
-reference databases, raw reads, or credentials to this repository.
+Do not add reference databases, raw reads, or credentials to this repository.
 
 Before public release, obtain author-team approval for citation metadata,
 authorship, licensing and reference-database distribution; see

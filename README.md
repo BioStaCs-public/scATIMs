@@ -34,7 +34,9 @@ method descriptions and software attribution.
 - The current private repository has synthetic unit/integration coverage for
   the 06–07 core and command-level/synthetic coverage for stages 00–05. A
   controlled real-FASTQ equivalence comparison against the frozen paper runtime
-  remains required before any stage is described as production-validated.
+  was completed for commit `c446950`; see `docs/release_validation.md`. This
+  single-library release check does not establish validation across all
+  chemistries or datasets.
 
 ## Installation
 
@@ -129,4 +131,5 @@ EmptyEnriched and Parameters outputs.
 - `docs/input_output.md`: file contracts and outputs.
 - `docs/parameters.md`: paper-locked and resource parameters.
 - `docs/release_provenance.md`: mapping from frozen runtime scripts to this candidate.
+- `docs/release_validation.md`: controlled real-FASTQ equivalence evidence.
 - `docs/workflow_00_07.md`: complete stage boundary, contracts and implementation status.
