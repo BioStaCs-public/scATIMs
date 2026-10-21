@@ -15,8 +15,9 @@
 - Converted fixed sample-relative input locations to configurable templates.
 - Removed server absolute paths and local sample-list defaults.
 - Added a YAML-driven stage-06/07 core runner and paper parameter file.
-- Changed the candidate standalone ATIMs minimum-evidence default from the
-  historical 1.0 to the actual paper value 0.0.
+- Removed the retired candidate-only ATIMs minimum-evidence-score option. The
+  current implementation retains positive-score assignments (`score > 0`)
+  before rank-level statistical testing.
 - Required Parameters JSON to exist before ATIMs treats a rank as complete.
 - Normalized the candidate scMic source from CRLF to LF.
 - Updated public terminology from global anchoring to compartment-specific
@@ -41,3 +42,13 @@ copied into the repository. Their exact identities and the refactoring boundary
 are retained in the internal source-audit record. Stage 00–05 command rendering
 and synthetic identity operations are tested, but a full real FASTQ equivalence
 run remains pending.
+
+## 0.2.0rc2 compatibility corrections
+
+The initial 00–07 candidate did not faithfully reproduce the legacy CR-to-CB
+table when one raw barcode had more than one corrected-barcode value: normal
+execution stopped, and the non-strict path selected one value. `0.2.0rc2`
+instead writes every unique valid pair in lexicographic order, matching the
+historical `sort -u` table, and writes conflicts to an audit file. This behavior
+is covered by a synthetic regression test. A real-FASTQ output-equivalence
+comparison remains required before public release.

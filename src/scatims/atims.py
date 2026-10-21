@@ -71,7 +71,7 @@ def calculate_barcode_statistics(df_umi):
         bc_feat_score[row['cell_barcode']][row['feature_name']] = float(row['score'])
     return bc_feat_score
 
-def analyze_features(df_cell_umi, df_empty_umi, total_cell, total_empty, level, min_evidence_score):
+def analyze_features(df_cell_umi, df_empty_umi, total_cell, total_empty, level):
     all_features = sorted(set(df_cell_umi['feature_name'].unique()) | set(df_empty_umi['feature_name'].unique()))
     cell_score = calculate_barcode_statistics(df_cell_umi)
     empty_score = calculate_barcode_statistics(df_empty_umi)
@@ -83,8 +83,9 @@ def analyze_features(df_cell_umi, df_empty_umi, total_cell, total_empty, level, 
         c_scores = [d[feature] for d in cell_score.values() if feature in d]
         e_scores = [d[feature] for d in empty_score.values() if feature in d]
 
-        cells_with_mic = sum(1 for s in c_scores if s >= min_evidence_score)
-        empty_with_mic = sum(1 for s in e_scores if s >= min_evidence_score)
+        # prepare_umi_data has already retained only positive assignment scores.
+        cells_with_mic = len(c_scores)
+        empty_with_mic = len(e_scores)
 
         _, p_fisher_cell = fisher_exact(
             [[cells_with_mic, total_cell - cells_with_mic],
@@ -116,7 +117,7 @@ def analyze_features(df_cell_umi, df_empty_umi, total_cell, total_empty, level, 
         log2fc_cell = np.log2((cm + pseudocount) / (em + pseudocount))
         log2fc_empty = np.log2((em + pseudocount) / (cm + pseudocount))
 
-        pos_c_scores = [s for s in c_scores if s >= min_evidence_score]
+        pos_c_scores = c_scores
         n_pos_c = len(pos_c_scores)
         if n_pos_c > 1:
             chi2_c = (n_pos_c - 1) * (np.var(pos_c_scores, ddof=1) / (np.mean(pos_c_scores) + 1e-8))
@@ -204,7 +205,7 @@ def filter_microbes(df_results, thresholds):
 
 # ================= 调度与输出 =================
 
-def process_sample_level(sample_id, scmic_dir, out_dir, total_cell, total_empty, level, thresholds, min_ev_score):
+def process_sample_level(sample_id, scmic_dir, out_dir, total_cell, total_empty, level, thresholds):
     # 定义输出文件路径
     cell_file = out_dir / f'{sample_id}_ATIMs_{level}_CellEnriched.tsv'
     empty_file = out_dir / f'{sample_id}_ATIMs_{level}_EmptyEnriched.tsv'
@@ -227,10 +228,9 @@ def process_sample_level(sample_id, scmic_dir, out_dir, total_cell, total_empty,
     df_cell_clean = prepare_umi_data(df_cell, level)
     df_empty_clean = prepare_umi_data(df_empty, level)
 
-    df_results = analyze_features(df_cell_clean, df_empty_clean, total_cell, total_empty, level, min_ev_score)
+    df_results = analyze_features(df_cell_clean, df_empty_clean, total_cell, total_empty, level)
     df_c, df_e, t_used = filter_microbes(df_results, thresholds)
 
-    t_used['min_evidence_score'] = min_ev_score
     # 结果落盘
     df_results.to_csv(stats_file, sep='\t', index=False)
     df_c.to_csv(cell_file, sep='\t', index=False)
@@ -246,7 +246,6 @@ def run_one_sample(
     sample_id,
     levels,
     thresholds,
-    min_ev_score,
     scmic_dir_name,
     out_dir_name,
     barcode_mapping_relative="01.starSolo_bam/CR_CB_mapping.tsv",
@@ -269,7 +268,7 @@ def run_one_sample(
         print(f"\n{'='*60}\n样本: {sample_id} | 真实细胞: {total_cell} | 空液滴: {total_empty}\n{'='*60}")
 
         for lvl in levels:
-            c_all, c_enriched, e_enriched = process_sample_level(sample_id, scmic_dir, out_dir, total_cell, total_empty, lvl, thresholds, min_ev_score)
+            c_all, c_enriched, e_enriched = process_sample_level(sample_id, scmic_dir, out_dir, total_cell, total_empty, lvl, thresholds)
             print(f"  > 层级 [{lvl}]: 发现 {c_all} 种实体 | Cell富集: {c_enriched} | Empty富集: {e_enriched}")
 
         return True, "Success"
@@ -283,8 +282,8 @@ def main(argv=None):
     parser.add_argument('--root-dir', required=True)
     parser.add_argument('--sample-list', required=True)
     parser.add_argument('--tax-levels', default='species,genus,family')
-    parser.add_argument('--scmic-dir-name', default='06.scMic_V10_EM')
-    parser.add_argument('--output-dir-name', default='07.ATIMs_V10_Dual')
+    parser.add_argument('--scmic-dir-name', default='06.scMic_6_V10_EM_Dis')
+    parser.add_argument('--output-dir-name', default='07.ATIMs_9_V10_EM_Dis')
     parser.add_argument('--workers', type=int, default=12)
     parser.add_argument(
         '--barcode-whitelist-relative',
@@ -303,12 +302,6 @@ def main(argv=None):
     parser.add_argument('--enrichment_ratio', type=float, default=1.0)
     parser.add_argument('--log2fc', type=float, default=1.0)
 
-    parser.add_argument(
-        '--min_evidence_score',
-        type=float,
-        default=0.0,
-        help='Paper-locked minimum per-droplet evidence score (default: 0.0)',
-    )
     parser.add_argument('--dispersion_pval', type=float, default=0.05)
 
     args = parser.parse_args(argv)
@@ -339,7 +332,6 @@ def main(argv=None):
                 s,
                 levels,
                 thresholds,
-                args.min_evidence_score,
                 args.scmic_dir_name,
                 args.output_dir_name,
                 args.barcode_mapping_relative,

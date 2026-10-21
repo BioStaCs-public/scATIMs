@@ -33,7 +33,7 @@ def selected_stages(first="00", last="07"):
         raise ValueError(f"Stages must be one of: {', '.join(STAGES)}")
     begin, end = STAGES.index(first), STAGES.index(last)
     if begin > end:
-        raise ValueError("--from-stage must precede --to-stage")
+        raise ValueError("pipeline.start_step must precede pipeline.end_step")
     return STAGES[begin:end + 1]
 
 
@@ -107,7 +107,9 @@ def _pathseq_command(config, sample):
     base = Path(project["root_dir"]) / sample
     input_bam = base / ((f"04b.vector/02.bam/{sample}.t2t_unmap.vector_unmapped.bam")
                         if vector else f"04.t2t/{sample}_rna_hg38_unmap_t2t_unmap.bam")
-    output = base / settings.get("output_dir_name", "05.pathseq_v10")
+    # These are release contracts, not user-tunable output names: downstream
+    # stages and archival tooling consume these exact directories.
+    output = base / "05.pathseq_v10"
     host = Path(resources["pathseq_host_db"])
     microbe = Path(resources["pathseq_microbe_db"])
     prefix = output / f"{sample}_rna_output.pathseq"
@@ -143,7 +145,7 @@ def _run_pathseq_sample(config, sample, log_dir, dry_run, force):
         raise RuntimeError(f"PathSeq completed without required outputs for {sample}")
 
 
-def run(config_path, first="00", last="07", dry_run=False, force=False):
+def run(config_path, dry_run=False, force=False):
     import yaml
     config_path = Path(config_path).resolve()
     with config_path.open(encoding="utf-8") as handle:
@@ -153,7 +155,9 @@ def run(config_path, first="00", last="07", dry_run=False, force=False):
     samples = read_samples(config["project"]["sample_list"])
     if not samples:
         raise ValueError("Sample list contains no samples")
-    stages = selected_stages(first, last)
+    pipeline = config.get("pipeline", {})
+    stages = selected_stages(str(pipeline.get("start_step", "00")),
+                             str(pipeline.get("end_step", "07")))
     preflight(config, samples, stages, dry_run)
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     log_dir = Path(config["project"]["root_dir"]) / ".scatims_runs" / run_id
@@ -178,8 +182,9 @@ def run(config_path, first="00", last="07", dry_run=False, force=False):
             section, project = config["scmic"], config["project"]
             args = ["--root-dir", str(project["root_dir"]), "--sample-list", str(project["sample_list"]),
                     "--taxonomy-hierarchy", str(section["taxonomy_hierarchy"])]
-            for key, flag in (("output_subdir", "--output-subdir"), ("workers", "--workers"),
-                              ("pathseq_bam_relative", "--pathseq-bam-relative"),
+            args += ["--output-subdir", "06.scMic_6_V10_EM_Dis",
+                     "--pathseq-bam-relative", "05.pathseq_v10/{sample_id}_rna_output.pathseq.bam"]
+            for key, flag in (("workers", "--workers"),
                               ("barcode_whitelist_relative", "--barcode-whitelist-relative"),
                               ("barcode_mapping_relative", "--barcode-mapping-relative"),
                               ("error_log_name", "--error-log-name")):
@@ -188,14 +193,14 @@ def run(config_path, first="00", last="07", dry_run=False, force=False):
         elif stage == "07":
             section, project = config["atims"], config["project"]
             args = ["--root-dir", str(project["root_dir"]), "--sample-list", str(project["sample_list"])]
-            for key, flag in (("tax_levels", "--tax-levels"), ("scmic_dir_name", "--scmic-dir-name"),
-                              ("output_dir_name", "--output-dir-name"), ("workers", "--workers"),
+            args += ["--scmic-dir-name", "06.scMic_6_V10_EM_Dis",
+                     "--output-dir-name", "07.ATIMs_9_V10_EM_Dis"]
+            for key, flag in (("tax_levels", "--tax-levels"), ("workers", "--workers"),
                               ("barcode_whitelist_relative", "--barcode-whitelist-relative"),
                               ("barcode_mapping_relative", "--barcode-mapping-relative"),
                               ("error_log_name", "--error-log-name"), ("fisher_pval", "--fisher_pval"),
                               ("mw_pval", "--mw_pval"), ("dispersion_pval", "--dispersion_pval"),
-                              ("enrichment_ratio", "--enrichment_ratio"), ("log2fc", "--log2fc"),
-                              ("min_evidence_score", "--min_evidence_score")):
+                              ("enrichment_ratio", "--enrichment_ratio"), ("log2fc", "--log2fc")):
                 _append(args, flag, section.get(key))
             print("scatims atims", shlex.join(args)) if dry_run else atims.main(args)
 
@@ -203,12 +208,10 @@ def run(config_path, first="00", last="07", dry_run=False, force=False):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
-    parser.add_argument("--from-stage", default="00", choices=STAGES)
-    parser.add_argument("--to-stage", default="07", choices=STAGES)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
-    run(args.config, args.from_stage, args.to_stage, args.dry_run, args.force)
+    run(args.config, args.dry_run, args.force)
     return 0
 
 

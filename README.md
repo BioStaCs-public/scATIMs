@@ -26,15 +26,15 @@ method descriptions and software attribution.
 
 ## Release status
 
-- Candidate version: `0.2.0rc1`
+- Candidate version: `0.2.0rc2`
 - Paper runtime source is frozen separately and is not edited by this repository.
 - Server-specific paths have been replaced with CLI/configuration parameters.
 - The paper parameter configuration is in `configs/paper_parameters.yaml`.
 - No real sample data, reference database, GATK binary or patient information is included.
-- The current private repository contains the validated 06–07 core and a
-  parameterized 00–05 implementation. Stages 00–05 have command-level and
-  synthetic tests, but still require a controlled real-FASTQ equivalence run
-  before they are described as production-validated.
+- The current private repository has synthetic unit/integration coverage for
+  the 06–07 core and command-level/synthetic coverage for stages 00–05. A
+  controlled real-FASTQ equivalence comparison against the frozen paper runtime
+  remains required before any stage is described as production-validated.
 
 ## Installation
 
@@ -61,7 +61,7 @@ scatims run --config config.local.yaml
 ```
 
 `config.local.yaml` is ignored by Git. The paper configuration locks all six
-taxonomic ranks and `min_evidence_score: 0.0`.
+taxonomic ranks. The finalized 05–07 output locations are fixed by the release.
 
 Individual steps remain available:
 
@@ -80,11 +80,11 @@ scatims workflow --config config.local.yaml --dry-run
 scatims workflow --config config.local.yaml
 ```
 
-Stage ranges and explicit reruns are supported:
+Set the inclusive stage range in `pipeline.start_step` and `pipeline.end_step`
+inside YAML; explicit reruns remain available:
 
 ```bash
-scatims workflow --config config.local.yaml --from-stage 03 --to-stage 05
-scatims workflow --config config.local.yaml --from-stage 04b --to-stage 04b --force
+scatims workflow --config config.local.yaml --force
 ```
 
 The current release scope is human scRNA-seq. Mouse preprocessing is not
@@ -101,8 +101,9 @@ By default, each sample under `project.root_dir` is expected to contain:
 └── 01.starSolo_bam/CR_CB_mapping.tsv
 ```
 
-All three relative paths are configurable. Detailed schemas and output files
-are documented in `docs/input_output.md`.
+The stage-05/06/07 directories are fixed release contracts; barcode-file paths
+remain configurable. Detailed schemas and output files are documented in
+`docs/input_output.md`.
 
 ## Reference resources
 

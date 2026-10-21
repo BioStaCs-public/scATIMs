@@ -449,7 +449,7 @@ def main(argv=None):
     parser.add_argument("--root-dir", required=True)
     parser.add_argument("--sample-list", required=True)
     parser.add_argument("--taxonomy-hierarchy", required=True)
-    parser.add_argument("--output-subdir", default="06.scMic_V10_EM", help="输出文件夹名称")
+    parser.add_argument("--output-subdir", default="06.scMic_6_V10_EM_Dis", help="输出文件夹名称")
     parser.add_argument("--workers", type=int, default=1, help="并行样本数")
     parser.add_argument(
         "--pathseq-bam-relative",

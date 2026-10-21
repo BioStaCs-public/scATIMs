@@ -10,12 +10,11 @@
 | Cell dispersion FDR threshold | 0.05 |
 | Enrichment ratio threshold | 1.0, strict `>` comparison |
 | log2FC threshold | 1.0, strict `>` comparison |
-| Minimum evidence score | 0.0 |
 
-Use `configs/paper_parameters.yaml` for paper reproduction. In the frozen
-historical ATIMs source, the standalone Python default for minimum evidence was
-1.0, but the actual paper batch runner overrode it to 0.0. The release candidate
-sets the standalone default to 0.0 to match the paper configuration.
+Use `configs/paper_parameters.yaml` for paper reproduction. There is no
+configurable ATIMs minimum-evidence-score threshold in this release. Before
+statistical testing, ATIMs retains assignments with `score > 0`, excludes
+`unknown` taxa, and then applies the tabled rank-level criteria.
 
 ## Resource parameters
 

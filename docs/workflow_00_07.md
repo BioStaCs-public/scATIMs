@@ -36,8 +36,11 @@ from sample names.
 ## Identity continuity
 
 STARsolo must emit both `CR` and `CB` tags. `scatims cr-cb` streams the tagged
-BAM and writes deterministic mapping, audit and conflict files. A raw barcode
-mapping to multiple corrected barcodes is a contract violation by default.
+BAM and writes deterministic mapping, audit and conflict files. To reproduce
+the original `run_CR2CB_multi_samples_del.sh` behavior, every unique valid
+`(CR, CB)` pair is retained in sorted order, including a raw barcode mapping to
+multiple corrected barcodes. The conflicts file records those cases; strict
+failure is available only as an explicit validation option.
 Stage 02 embeds the raw barcode and UMI in the candidate-read identity so stage
 06 can recover the corrected cell identity after host and vector filtering.
 
@@ -46,3 +49,20 @@ Stage 02 embeds the raw barcode and UMI in the candidate-read identity so stage
 Stages 00–05 wrap or coordinate fastp, STARsolo, BWA, samtools and GATK
 PathSeq. Their inclusion defines the scATIMs software workflow, not ownership
 of those third-party algorithms. scMic and ATIMs are the original method core.
+# Execution control
+
+The complete workflow is dispatched by `scatims workflow --config CONFIG.yaml`.
+Set the inclusive range in the configuration itself:
+
+```yaml
+pipeline:
+  start_step: "00"
+  end_step: "07"
+```
+
+Valid step identifiers are `00`, `01`, `02`, `03`, `04`, `04b`, `05`, `06`,
+and `07`. This release deliberately does not offer command-line range
+overrides, so the configuration archived with a run is the authoritative record
+of the requested interval. Stages 05–07 use fixed producer/consumer folders:
+`05.pathseq_v10`, `06.scMic_6_V10_EM_Dis`, and
+`07.ATIMs_9_V10_EM_Dis`.

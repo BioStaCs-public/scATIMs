@@ -227,7 +227,7 @@ class HumanPreprocessor:
             if not self.dry_run:
                 extract_mapping(bam, mapping,
                                 decompress_threads=self.compute.get("bam_threads", 2),
-                                fail_on_conflict=True)
+                                fail_on_conflict=False)
                 _require(mapping, identity / "CR_CB_mapping_audit.tsv")
 
     def stage02(self):

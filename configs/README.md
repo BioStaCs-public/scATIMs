@@ -11,5 +11,6 @@ server path and is not itself a paper execution record.
 
 Resource choices such as `workers` may be reduced without changing the
 scientific decision rules. Any change to Fisher, Mann–Whitney, dispersion,
-enrichment-ratio, log2FC or minimum-evidence thresholds should be recorded as a
-new analysis configuration.
+enrichment-ratio or log2FC thresholds should be recorded as a new analysis
+configuration. ATIMs has no configurable minimum-evidence-score threshold in
+this release.

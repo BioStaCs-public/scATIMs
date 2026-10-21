@@ -41,14 +41,14 @@ def run_from_config(config_path: str | Path) -> None:
         "--taxonomy-hierarchy", str(taxonomy),
     ]
     for key, flag in (
-        ("output_subdir", "--output-subdir"),
         ("workers", "--workers"),
-        ("pathseq_bam_relative", "--pathseq-bam-relative"),
         ("barcode_whitelist_relative", "--barcode-whitelist-relative"),
         ("barcode_mapping_relative", "--barcode-mapping-relative"),
         ("error_log_name", "--error-log-name"),
     ):
         _append(scmic_args, flag, scmic_config.get(key))
+    scmic_args.extend(["--output-subdir", "06.scMic_6_V10_EM_Dis",
+                       "--pathseq-bam-relative", "05.pathseq_v10/{sample_id}_rna_output.pathseq.bam"])
 
     atims_args: list[str] = [
         "--root-dir", str(root_dir),
@@ -56,8 +56,6 @@ def run_from_config(config_path: str | Path) -> None:
     ]
     for key, flag in (
         ("tax_levels", "--tax-levels"),
-        ("scmic_dir_name", "--scmic-dir-name"),
-        ("output_dir_name", "--output-dir-name"),
         ("workers", "--workers"),
         ("barcode_whitelist_relative", "--barcode-whitelist-relative"),
         ("barcode_mapping_relative", "--barcode-mapping-relative"),
@@ -67,9 +65,10 @@ def run_from_config(config_path: str | Path) -> None:
         ("dispersion_pval", "--dispersion_pval"),
         ("enrichment_ratio", "--enrichment_ratio"),
         ("log2fc", "--log2fc"),
-        ("min_evidence_score", "--min_evidence_score"),
     ):
         _append(atims_args, flag, atims_config.get(key))
+    atims_args.extend(["--scmic-dir-name", "06.scMic_6_V10_EM_Dis",
+                       "--output-dir-name", "07.ATIMs_9_V10_EM_Dis"])
 
     print("[scATIMs] Step 1/2: scMic")
     scmic.main(scmic_args)
@@ -85,7 +84,7 @@ def _print_help() -> None:
         "  scatims scmic [scMic options]\n"
         "  scatims atims [ATIMs options]\n"
         "  scatims cr-cb [CR-to-CB mapping options]\n"
-        "  scatims workflow --config CONFIG.yaml [--from-stage 00 --to-stage 07]\n"
+        "  scatims workflow --config CONFIG.yaml  # stage range is controlled in YAML\n"
         "  scatims --version"
     )
 

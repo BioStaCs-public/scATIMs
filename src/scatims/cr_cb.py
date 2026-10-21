@@ -21,8 +21,20 @@ def _atomic_write(path: Path, lines: list[str]) -> None:
 
 
 def extract_mapping(bam_path, mapping_path, audit_path=None, conflict_path=None,
-                    decompress_threads=2, fail_on_conflict=True):
-    """Extract unique CR/CB pairs and write deterministic audited outputs."""
+                    decompress_threads=2, fail_on_conflict=False):
+    """Extract the legacy CR/CB mapping table with deterministic audit outputs.
+
+    The original ``run_CR2CB_multi_samples_del.sh`` implementation emitted every
+    unique valid ``(CR_Raw, CB_Corrected)`` pair via ``sort -u``.  It did not
+    reject a raw barcode that had more than one corrected-barcode value.  Keep
+    that table-level behavior here: downstream legacy scMic code reads the
+    rows sequentially into a dictionary, so for a conflicting CR the final
+    lexicographically sorted row is the effective value.  Conflicts remain in
+    a separate audit file rather than being silently hidden.
+
+    ``fail_on_conflict`` is retained only for an explicit validation mode; the
+    workflow itself uses the historical non-failing behavior.
+    """
     bam_path, mapping_path = Path(bam_path), Path(mapping_path)
     audit_path = Path(audit_path or mapping_path.with_name("CR_CB_mapping_audit.tsv"))
     conflict_path = Path(conflict_path or mapping_path.with_name("CR_CB_mapping_conflicts.tsv"))
@@ -72,11 +84,12 @@ def extract_mapping(bam_path, mapping_path, audit_path=None, conflict_path=None,
     if conflicts and fail_on_conflict:
         write_audit("failed_conflicting_cr")
         raise RuntimeError(f"Found {len(conflicts)} conflicting raw barcodes; see {conflict_path}")
-    selected = {cr: sorted(value.items(), key=lambda item: (-item[1], item[0]))[0][0]
-                for cr, value in counts.items()}
+    pairs = sorted((cr, cb) for cr, values in counts.items() for cb in values)
     _atomic_write(mapping_path, ["CR_Raw\tCB_Corrected\n"] +
-                  [f"{cr}\t{selected[cr]}\n" for cr in sorted(selected)])
-    metrics.update({"mapping_rows": len(selected), "mapping_path": str(mapping_path),
+                  [f"{cr}\t{cb}\n" for cr, cb in pairs])
+    metrics.update({"mapping_rows": len(pairs),
+                    "mapping_policy": "legacy_all_unique_cr_cb_pairs",
+                    "mapping_path": str(mapping_path),
                     "conflict_path": str(conflict_path)})
     write_audit("success")
     return metrics
@@ -89,10 +102,13 @@ def main(argv=None):
     parser.add_argument("--audit")
     parser.add_argument("--conflicts")
     parser.add_argument("--threads", type=int, default=2)
-    parser.add_argument("--allow-conflicts", action="store_true")
+    parser.add_argument(
+        "--fail-on-conflict", action="store_true",
+        help="Validation only: stop instead of reproducing the legacy all-pairs mapping behavior.",
+    )
     args = parser.parse_args(argv)
     extract_mapping(args.bam, args.output, args.audit, args.conflicts,
-                    args.threads, not args.allow_conflicts)
+                    args.threads, args.fail_on_conflict)
     return 0
 
 

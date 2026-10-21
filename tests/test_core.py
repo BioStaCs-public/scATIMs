@@ -37,7 +37,7 @@ class AtimsCoreTests(unittest.TestCase):
                 )
         empty_rows = [{"cell_barcode": "E00", "UMI": "U0", "feature_name": "Taxon A", "score": 1.0}]
         result = atims.analyze_features(
-            pd.DataFrame(cell_rows), pd.DataFrame(empty_rows), 20, 20, "species", 0.0
+            pd.DataFrame(cell_rows), pd.DataFrame(empty_rows), 20, 20, "species"
         )
         thresholds = {
             "fisher_pval": 0.05,
@@ -128,7 +128,6 @@ class EndToEndToyTest(unittest.TestCase):
                 sample_id,
                 ["species"],
                 thresholds,
-                0.0,
                 "06.scMic_test",
                 "07.ATIMs_test",
             )
@@ -145,15 +144,15 @@ class EndToEndToyTest(unittest.TestCase):
             cell_enriched = pd.read_csv(expected[1], sep="\t")
             self.assertEqual(cell_enriched["feature_name"].tolist(), ["Taxon alpha"])
             parameters = json.loads(expected[3].read_text(encoding="utf-8"))
-            self.assertEqual(parameters["min_evidence_score"], 0.0)
+            self.assertNotIn("min_evidence_score", parameters)
 
 
 class UnifiedCliTests(unittest.TestCase):
-    def test_paper_config_forwards_locked_parameter(self):
+    def test_paper_config_uses_fixed_release_directories(self):
         config = {
             "project": {"root_dir": "/project", "sample_list": "/samples.txt"},
             "scmic": {"taxonomy_hierarchy": "/taxonomy.tsv", "workers": 1},
-            "atims": {"tax_levels": "all", "min_evidence_score": 0.0, "workers": 1},
+            "atims": {"tax_levels": "all", "workers": 1},
         }
         fake_yaml = types.SimpleNamespace(safe_load=lambda handle: config)
         with tempfile.TemporaryDirectory() as tmp:
@@ -165,8 +164,9 @@ class UnifiedCliTests(unittest.TestCase):
                 cli.run_from_config(config_path)
         scmic_main.assert_called_once()
         atims_args = atims_main.call_args.args[0]
-        index = atims_args.index("--min_evidence_score")
-        self.assertEqual(atims_args[index + 1], "0.0")
+        self.assertNotIn("--min_evidence_score", atims_args)
+        self.assertIn("06.scMic_6_V10_EM_Dis", atims_args)
+        self.assertIn("07.ATIMs_9_V10_EM_Dis", atims_args)
 
 
 class CrCbMappingTests(unittest.TestCase):
@@ -193,7 +193,7 @@ class CrCbMappingTests(unittest.TestCase):
             ])
             self.assertIn("status\tsuccess", (root / "CR_CB_mapping_audit.tsv").read_text())
 
-    def test_conflicting_raw_barcode_fails_with_audit(self):
+    def test_conflicting_raw_barcode_reproduces_legacy_all_pairs_table(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             bam_path = root / "tagged.bam"
@@ -209,16 +209,41 @@ class CrCbMappingTests(unittest.TestCase):
                     read.set_tag("CB", cb)
                     bam.write(read)
             output = root / "CR_CB_mapping.tsv"
-            with self.assertRaisesRegex(RuntimeError, "conflicting raw barcodes"):
-                cr_cb.extract_mapping(bam_path, output)
-            self.assertFalse(output.exists())
+            metrics = cr_cb.extract_mapping(bam_path, output)
+            self.assertEqual(metrics["mapping_rows"], 2)
+            self.assertEqual(metrics["mapping_policy"], "legacy_all_unique_cr_cb_pairs")
+            self.assertEqual(output.read_text(encoding="utf-8").splitlines(), [
+                "CR_Raw\tCB_Corrected", "RAW1\tCB1", "RAW1\tCB2"
+            ])
             self.assertIn(
-                "status\tfailed_conflicting_cr",
+                "status\tsuccess",
                 (root / "CR_CB_mapping_audit.tsv").read_text(encoding="utf-8"),
             )
             conflicts = (root / "CR_CB_mapping_conflicts.tsv").read_text(encoding="utf-8")
             self.assertIn("RAW1\tCB1\t1", conflicts)
             self.assertIn("RAW1\tCB2\t1", conflicts)
+
+    def test_conflicting_raw_barcode_can_be_strictly_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bam_path = root / "tagged.bam"
+            header = {"HD": {"VN": "1.6"}, "SQ": [{"SN": "chr1", "LN": 100}]}
+            with pysam.AlignmentFile(bam_path, "wb", header=header) as bam:
+                for cb in ("CB1", "CB2"):
+                    read = pysam.AlignedSegment()
+                    read.query_name = "read"
+                    read.query_sequence = "A" * 20
+                    read.flag = 0
+                    read.reference_id = 0
+                    read.reference_start = 1
+                    read.mapping_quality = 60
+                    read.cigar = ((0, 20),)
+                    read.query_qualities = pysam.qualitystring_to_array("I" * 20)
+                    read.set_tag("CR", "RAW1")
+                    read.set_tag("CB", cb)
+                    bam.write(read)
+            with self.assertRaisesRegex(RuntimeError, "conflicting raw barcodes"):
+                cr_cb.extract_mapping(bam_path, root / "CR_CB_mapping.tsv", fail_on_conflict=True)
 
 
 class PreprocessingTests(unittest.TestCase):
@@ -307,11 +332,12 @@ class PreprocessingTests(unittest.TestCase):
                               "pathseq_host_db": "/ref/host", "pathseq_microbe_db": "/ref/microbe"},
                 "compute": {"threads": 2, "pathseq_sample_workers": 1},
                 "workflow": {"vector_filter": True},
+                "pipeline": {"start_step": "00", "end_step": "05"},
             }
             fake_yaml = types.SimpleNamespace(safe_load=lambda handle: config)
             stream = io.StringIO()
             with mock.patch.dict(sys.modules, {"yaml": fake_yaml}), mock.patch("sys.stdout", stream):
-                workflow.run(config_path, "00", "05", dry_run=True)
+                workflow.run(config_path, dry_run=True)
             rendered = stream.getvalue()
             self.assertIn("fastp", rendered)
             self.assertIn("--outSAMattributes CR CB", rendered)
